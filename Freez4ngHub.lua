@@ -1,9 +1,204 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local ownerName = "freez4ng"
+local ownerId = 7571761782
+
+-- Table pour enregistrer les joueurs ayant exécuté le script
+local scriptUsers = {}
+
+local function sendNotification(title, text, duration)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration or 5, -- Durée par défaut de 5 secondes
+    })
+end
+
+-- Enregistrer l'utilisateur du script
+local localPlayer = Players.LocalPlayer
+if localPlayer then
+    table.insert(scriptUsers, localPlayer.UserId)
+end
+
+-- Surveiller quand un joueur rejoint
+Players.PlayerAdded:Connect(function(player)
+    if player.UserId == ownerId then
+        -- Le propriétaire a rejoint, notifier tous les utilisateurs du script
+        for _, userId in ipairs(scriptUsers) do
+            local userPlayer = Players:GetPlayerByUserId(userId)
+            if userPlayer and userPlayer == localPlayer then
+                sendNotification("Alerte", "Le owner du script a rejoint !", 5)
+            end
+        end
+    end
+end)
+
+local function createLoadingScreen(message, subtitleMessage, duration, progressSpeed)
+    local screenGui = Instance.new("ScreenGui")
+    local frame = Instance.new("Frame")
+    local title = Instance.new("TextLabel")
+    local progressBarContainer = Instance.new("Frame")
+    local progressBar = Instance.new("Frame")
+    local subtitle = Instance.new("TextLabel")
+    
+    -- Propriétés du ScreenGui
+    screenGui.Name = "LoadingScreen"
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    screenGui.IgnoreGuiInset = true
+
+    -- Cadre principal
+    frame.Name = "MainFrame"
+    frame.Parent = screenGui
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+
+    -- Titre
+    title.Name = "Title"
+    title.Parent = frame
+    title.Text = message
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 32
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.new(0.6, 0, 0.1, 0)
+    title.Position = UDim2.new(0.5, 0, 0.4, 0)
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.TextScaled = true
+
+    -- Barre de progression
+    progressBarContainer.Name = "ProgressBarContainer"
+    progressBarContainer.Parent = frame
+    progressBarContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    progressBarContainer.Size = UDim2.new(0.6, 0, 0.05, 0)
+    progressBarContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+    progressBarContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+    progressBarContainer.BackgroundTransparency = 1
+
+    local containerUICorner = Instance.new("UICorner")
+    containerUICorner.CornerRadius = UDim.new(0, 12)
+    containerUICorner.Parent = progressBarContainer
+
+    progressBar.Name = "ProgressBar"
+    progressBar.Parent = progressBarContainer
+    progressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    progressBar.Size = UDim2.new(0, 0, 1, 0)
+
+    local progressUICorner = Instance.new("UICorner")
+    progressUICorner.CornerRadius = UDim.new(0, 12)
+    progressUICorner.Parent = progressBar
+
+    -- Sous-titre
+    subtitle.Name = "Subtitle"
+    subtitle.Parent = frame
+    subtitle.Text = subtitleMessage
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextSize = 18
+    subtitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Size = UDim2.new(0.6, 0, 0.05, 0)
+    subtitle.Position = UDim2.new(0.5, 0, 0.57, 0)
+    subtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    subtitle.TextScaled = true
+
+    -- Animation d'entrée
+    game:GetService("TweenService"):Create(frame, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
+    game:GetService("TweenService"):Create(progressBarContainer, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
+
+    -- Remplissage progressif
+    for i = 1, 100 do
+        progressBar.Size = UDim2.new(i / 100, 0, 1, 0)
+        task.wait(progressSpeed)
+    end
+
+    -- Animation de sortie
+    game:GetService("TweenService"):Create(frame, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
+    game:GetService("TweenService"):Create(progressBarContainer, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
+    task.wait(1)
+
+    -- Suppression
+    screenGui:Destroy()
+end
+
+print("#######################")
+print("#    Freez4ng Hub     #")
+print("#   [ - Loaded ! - ]  #")
+print("#             {V1.1.2}#")
+print("#######################")
+
+
+-- Premier écran de chargement universel
+createLoadingScreen(
+    "Freez4ng Hub on top 🎇",
+    "Patience est la clé de la réussite... 🚀",
+    5,
+    0.05
+)
+
+if game.PlaceId == 6884319169 then
+    createLoadingScreen(
+        "Mic Up detecté",
+        "- Baseplate élargie. 🏝\n - Sol de la private room solidifié. 🔨",
+        nil,
+        0.1
+    )
+
+    -- Taille d'un segment de la baseplate (plus réaliste)
+    local segmentSize = 1000 -- Chaque segment fait 1000x1000 studs
+    local gridSize = 50 -- Nombre de segments dans chaque direction (50x50 = 2 500 segments)
+
+    -- Centre de la grille basé sur la position du joueur
+    local playerPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+    local baseCenterX = math.floor(playerPosition.X / segmentSize) * segmentSize
+    local baseCenterZ = math.floor(playerPosition.Z / segmentSize) * segmentSize
+
+    -- Création des segments
+    for x = -gridSize, gridSize do
+        for z = -gridSize, gridSize do
+            local newSegment = Instance.new("Part")
+            newSegment.Size = Vector3.new(segmentSize, 1, segmentSize) -- Taille du segment
+            newSegment.Position = Vector3.new(
+                baseCenterX + (x * segmentSize),
+                -0.5,
+                baseCenterZ + (z * segmentSize)
+            )
+            newSegment.Anchored = true
+            newSegment.Material = Enum.Material.Grass
+            newSegment.BrickColor = BrickColor.new("Bright green")
+            newSegment.CanCollide = true
+            newSegment.Name = "BaseSegment"
+            newSegment.Parent = workspace
+        end
+    end
+
+    -- CFrame cible à rechercher
+    local targetCFrame = CFrame.new(
+        4220.60938, 2.71573448, 61.1288643, 
+        -1, 0, 0, 
+        0, 1, 0, 
+        0, 0, -1
+    )
+
+    -- Parcourir les modèles "Room" dans le `workspace`
+    for _, room in ipairs(workspace:GetChildren()) do
+        if room:IsA("Model") and room.Name == "Room" then
+            -- Rechercher une `Part` avec la CFrame cible dans le modèle "Room"
+            for _, part in ipairs(room:GetDescendants()) do
+                if part:IsA("Part") and part.CFrame == targetCFrame then
+                    part.CanCollide = true
+                    -- print("CanCollide activé pour :", part:GetFullName())
+                end
+            end
+        end
+    end
+end
+
 
 -- Création de la fenêtre principale
 local Window = Rayfield:CreateWindow({
-   Name = "Freez4ng Hub | Updated : 28/11/24 - 16h51",
-   LoadingTitle = "Chargement de Freez4ng Hub...",
+   Name = "Freez4ng Hub | Updated : 08/12/24 - 21h41 {🇫🇷}",
+   LoadingTitle = "Make better : Freez4ng Hub...",
    LoadingSubtitle = "- By Freez4ng -",
    ConfigurationSaving = {
       Enabled = false
@@ -11,20 +206,54 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false
 })
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local submitTextEvent = ReplicatedStorage:FindFirstChild("SubmitTextEvent")
+
+
 -- Création de l'onglet principal
 local Menu = Window:CreateTab("🏠 Main")
 local MainTab = Window:CreateTab("⭐ Troll")
 local ToolsTab = Window:CreateTab("🪓 Tools")
+local ActivateTab = Window:CreateTab("🗝 Activate")
+local TpTab = Window:CreateTab("📍 Téléportation")
 -- Variables pour le suivi
 local isFollowing = false
 local followTask
 local activationKey = Enum.KeyCode.F
 local tripKey = Enum.KeyCode.G
 
+ActivateTab:CreateLabel("❓ - Cela sert à activer les parcours, au lieu d'avoir à monter en haut de la tour pour le faire manuellement, vous l'avez ici.")
+TpTab:CreateLabel("❓ - Cela sert à se téléporter à différents endroits de la map de Mic Up, histoire de gagner du temps.")
+ToolsTab:CreateLabel("❓ - Cela sert à se donner des 'outils' dans votre inventaire pour faire diverses choses.")
+
+
+if not submitTextEvent or not submitTextEvent:IsA("RemoteEvent") then
+    warn("SubmitTextEvent n'existe pas ou n'est pas un RemoteEvent")
+    return
+end
+
+-- Variable pour contrôler l'état de l'envoi
+local isSendingText = false
+
 -- Supprime toutes les animations en cours
 local function clearAnimations(humanoid)
     for _, animTrack in ipairs(humanoid:GetPlayingAnimationTracks()) do
         animTrack:Stop()
+    end
+end
+
+local function toggleTextSending(isEnabled)
+    isSendingText = isEnabled
+    if isSendingText then
+        -- Démarrer une boucle tant que c'est activé
+        task.spawn(function()
+            while isSendingText do
+                submitTextEvent:FireServer("Stop") -- Envoie le texte au RemoteEvent
+                submitTextEvent:FireServer("Stop")
+                submitTextEvent:FireServer("Stop")
+                task.wait(0.01) -- Très faible délai pour éviter les surcharges
+            end
+        end)
     end
 end
 
@@ -45,6 +274,30 @@ local function getClosestPlayer()
         end
     end
     return closestPlayer
+end
+
+local function toggleModel(model, state)
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = state and 0 or 1
+            part.CanCollide = state
+        end
+    end
+end
+
+-- Parcourt tous les modèles dans Workspace.Obby
+for _, model in ipairs(workspace.Obby:GetChildren()) do
+    if model:IsA("Model") then
+        -- Ajout d'un bouton à cocher pour chaque modèle
+        ActivateTab:CreateToggle({
+            Name = model.Name,
+            CurrentValue = false,
+            Flag = "Toggle_" .. model.Name,
+            Callback = function(state)
+                toggleModel(model, state)
+            end
+        })
+    end
 end
 
 local function startFollowing()
@@ -141,68 +394,6 @@ MainTab:CreateInput({
             activationKey = newKey
             Rayfield:Notify({
                 Title = "Key Changed",
-                Content = "Nouvelle touche : " .. input:upper(),
-                Duration = 5
-            })
-        else
-            Rayfield:Notify({
-                Title = "Invalid Key",
-                Content = "Veuillez entrer une touche valide.",
-                Duration = 5
-            })
-        end
-    end
-})
-
-local function Trip()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-
-    if rootPart and humanoid then
-        -- Désactiver temporairement les mouvements pour simuler une chute
-        humanoid.PlatformStand = true
-
-        -- Désactiver le saut
-        humanoid.Jump = false -- Empêche de sauter immédiatement
-        local originalJumpPower = humanoid.JumpPower
-        humanoid.JumpPower = 0
-
-        -- Ajouter une propulsion plus forte vers l'avant
-        local propulsionForce = 50 -- Puissance augmentée
-        local lookVector = rootPart.CFrame.LookVector
-        rootPart.Velocity = lookVector * propulsionForce -- Pousse vers l'avant uniquement
-
-        -- Attendre un court instant avant de réactiver les mouvements
-        task.wait(0.5)
-        humanoid.PlatformStand = false
-        humanoid.JumpPower = originalJumpPower
-        humanoid.Jump = true -- Autoriser à sauter de nouveau
-    end
-end
-
-
--- Détection de la touche pour activer la fonction
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == tripKey then
-        Trip()
-    end
-end)
-MainTab:CreateLabel("↓ Trip by freez4ng ↓ - Votre personnage tombera en avant en faisant un salto juste après.")
-
--- Ajout du bouton dans l'interface
-MainTab:CreateInput({
-    Name = "Change Trip Key (Par défaut : G)",
-    PlaceholderText = "Enter Key (e.g., G, H)",
-    RemoveTextAfterFocusLost = true,
-    Callback = function(input)
-        local newKey = Enum.KeyCode[input:upper()] -- Convertit l'entrée utilisateur en Enum.KeyCode
-        if newKey then
-            tripKey = newKey
-            Rayfield:Notify({
-                Title = "Trip Key Changed",
                 Content = "Nouvelle touche : " .. input:upper(),
                 Duration = 5
             })
@@ -335,5 +526,89 @@ ToolsTab:CreateButton({
             Content = "L'outil de Bang a été ajouté à votre inventaire.",
             Duration = 5
         })
+    end
+})
+
+-- Ajout des boutons de téléportation dans la catégorie "📍 Téléportation"
+local destinations = {
+    {Name = "- Salle privé (A côté/en dehors)", Position = Vector3.new(4221.45, 3, 20.8799)},
+    {Name = "- Salle privé (A l'interieure)", Position = Vector3.new(4220.35, 5.92277, 68.4868)},
+    {Name = "- Fée emplacement", Position = Vector3.new(-115.698, 33.7183, -46.7717)},
+    {Name = "- Donuts", Position = Vector3.new(-78.5842, 3.18543, -79.334)},
+    {Name = "- Milieu de la map", Position = Vector3.new(27.4293, 5, 17.851)},
+    {Name = "- Grand Bâtiment", Position = Vector3.new(211.43, 23.4127, 67.9908)},
+    {Name = "- Mur (NotePad)", Position = Vector3.new(59.9446, 3, 255.75)},
+    {Name = "- Tour (Au top)", Position = Vector3.new(59.3136, 313.313, 227.178)},
+}
+
+local function applyTransparencyEffect(character)
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        local parts = character:GetDescendants()
+        local originalTransparencies = {} -- Table pour stocker les transparences originales
+        
+        -- Sauvegarde des transparences originales
+        for _, part in ipairs(parts) do
+            if part:IsA("BasePart") then
+                originalTransparencies[part] = part.Transparency
+            end
+        end
+
+        for i = 1, 10 do -- Augmentation des alternances à 10
+            for _, part in ipairs(parts) do
+                if part:IsA("BasePart") and part.Transparency < 1 then
+                    part.Transparency = (i % 2 == 0) and 0.5 or 0 -- Alternance entre 0 et 0.5
+                end
+            end
+            task.wait(0.2) -- Temps entre les alternances augmenté pour un effet plus long
+        end
+
+        -- Retour aux transparences originales à la fin
+        for part, originalTransparency in pairs(originalTransparencies) do
+            if part:IsA("BasePart") then
+                part.Transparency = originalTransparency -- Réinitialisation
+            end
+        end
+    end
+end
+
+
+-- Création des boutons de téléportation
+for _, destination in ipairs(destinations) do
+    TpTab:CreateButton({
+        Name = destination.Name,
+        Callback = function()
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                -- Téléporte le joueur
+                rootPart.CFrame = CFrame.new(destination.Position + Vector3.new(0, 5, 0)) -- Ajout de 5 pour éviter le sol
+                -- Applique l'effet de transparence
+                applyTransparencyEffect(character)
+            end
+        end
+    })
+end
+
+MainTab:CreateToggle({
+    Name = "- Spammer 'Stop' (Mur Text)",
+    Default = false, -- Par défaut décoché
+    Callback = function(state)
+        toggleTextSending(state) -- Active ou désactive selon l'état de la case
+    end
+})
+
+Menu:CreateToggle({
+    Name = "- BasePlate ( Visible / Invisible ) :",
+    Default = true,
+    Callback = function(value)
+        baseSegmentsVisible = value
+        -- Mise à jour de la visibilité des segments dans Workspace
+        for _, part in pairs(workspace:GetChildren()) do
+            if part:IsA("Part") and part.Name == "BaseSegment" then
+                part.Transparency = baseSegmentsVisible and 0 or 1
+            end
+        end
     end
 })
