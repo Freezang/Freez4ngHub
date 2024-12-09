@@ -1,6 +1,9 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
+
 local ownerName = "freez4ng"
 local ownerId = 7571761782
 
@@ -210,9 +213,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local submitTextEvent = ReplicatedStorage:FindFirstChild("SubmitTextEvent")
 
 
+local baseSegmentsCollidable = true
 -- Création de l'onglet principal
 local Menu = Window:CreateTab("🏠 Main")
-local MainTab = Window:CreateTab("⭐ Troll")
+local MainTab = Window:CreateTab("⭐ KeyBinds")
 local ToolsTab = Window:CreateTab("🪓 Tools")
 local ActivateTab = Window:CreateTab("🗝 Activate")
 local TpTab = Window:CreateTab("📍 Téléportation")
@@ -241,6 +245,31 @@ local function clearAnimations(humanoid)
         animTrack:Stop()
     end
 end
+
+local function toggleCFrameMovement()
+    if not isCFrameToggling then
+        isCFrameToggling = true
+        while isCFrameToggling do
+            local root = Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.CFrame = root.CFrame * CFrame.new(0.5, 0, 0) -- Déplacement à droite
+                task.wait(0.05) -- Très rapide
+                root.CFrame = root.CFrame * CFrame.new(-1, 0, 0) -- Déplacement à gauche
+                task.wait(0.05)
+            end
+        end
+    else
+        isCFrameToggling = false
+    end
+end
+
+-- Détecter les appuis sur la touche configurée
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == currentKey then
+        toggleCFrameMovement()
+    end
+end)
 
 local function toggleTextSending(isEnabled)
     isSendingText = isEnabled
@@ -407,32 +436,35 @@ MainTab:CreateInput({
     end
 })
 
--- Fonction pour créer l'outil de téléportation
 local function createTeleportTool()
     local tool = Instance.new("Tool")
-    tool.Name = "TeleportTool"
+    tool.Name = "Teleport Tool" -- Ajout de l'espace
     tool.RequiresHandle = false -- Pas de modèle requis
     tool.CanBeDropped = false
 
-    -- Action lorsqu'on clique avec l'outil
-    tool.Activated:Connect(function()
+    -- Action lorsqu'on équipe l'outil
+    tool.Equipped:Connect(function()
         local player = game.Players.LocalPlayer
         local mouse = player:GetMouse()
         local character = player.Character or player.CharacterAdded:Wait()
         local rootPart = character:FindFirstChild("HumanoidRootPart")
 
         if rootPart then
-            -- Détection de la position de clic
+            -- Connecte l'événement de clic
             mouse.Button1Down:Connect(function()
-                local targetPosition = mouse.Hit.p
-                -- Téléportation du joueur à l'endroit cliqué
-                rootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0)) -- Ajoute une élévation de 5 pour éviter de tomber dans le sol
+                local targetPosition = mouse.Hit.Position
+                local currentOrientation = rootPart.CFrame - rootPart.Position
+
+                -- Téléportation à l'endroit cliqué en conservant orientation et comportement
+                rootPart.CFrame = currentOrientation + Vector3.new(targetPosition.X, targetPosition.Y + 5, targetPosition.Z)
             end)
         end
     end)
 
     return tool
 end
+
+
 
 -- Ajout du bouton pour donner l'outil
 ToolsTab:CreateButton({
@@ -608,6 +640,27 @@ Menu:CreateToggle({
         for _, part in pairs(workspace:GetChildren()) do
             if part:IsA("Part") and part.Name == "BaseSegment" then
                 part.Transparency = baseSegmentsVisible and 0 or 1
+            end
+        end
+    end
+})
+
+for _, part in pairs(workspace:GetChildren()) do
+    if part:IsA("Part") and part.Name == "BaseSegment" then
+        part.CanCollide = baseSegmentsCollidable
+    end
+end
+
+-- Créer le Toggle
+Menu:CreateToggle({
+    Name = "- BasePlate Collisions ( On / Off ) :",
+    Default = baseSegmentsCollidable, -- Définit l'état initial à coché
+    Callback = function(value)
+        baseSegmentsCollidable = value
+        -- Mise à jour des collisions des segments dans Workspace
+        for _, part in pairs(workspace:GetChildren()) do
+            if part:IsA("Part") and part.Name == "BaseSegment" then
+                part.CanCollide = baseSegmentsCollidable
             end
         end
     end
